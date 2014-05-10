@@ -21,9 +21,9 @@
   </script>
 
   <script type="text/x-handlebars" data-template-name="views/item-result">
-    <li class="dropdown-result" {{action "pick" data}}>
+    {{#with view.content}}
       {{highlight display start end}}
-    </li>
+    {{/with}}
   </script>
 
   <script type="text/x-handlebars" data-template-name="components/item-picker">
@@ -36,13 +36,7 @@
           <div class="dropdown-query">
             {{input id="dropdown-query-input" type="text" value=query }}
           </div>
-          <ul class="dropdown-results">
-            {{#each highlights}}
-              {{view App.ItemResultView}}
-            {{else}}
-              <li>No results found for "{{query}}"</li>
-            {{/each}}
-          </ul>
+          {{collection App.ItemPickerResultsView content=highlights itemViewClass="App.ItemResultView" tagName="ul" class="dropdown-results"}}
         </div>
       </div>
     </div>

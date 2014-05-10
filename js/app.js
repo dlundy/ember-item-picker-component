@@ -180,6 +180,7 @@ App.ItemPickerComponent = Ember.Component.extend({
       }
     },
     pick: function(item) {
+      console.log('fired');
       this.set('selected', item);
       this.deactivate();
     }
@@ -192,8 +193,15 @@ App.ItemPickerComponent = Ember.Component.extend({
 });
 
 App.ItemResultView = Ember.View.extend({
+  classNames: 'dropdown-result',
   templateName: 'views/item-result',
   mouseEnter: function() {
-    console.log(this);
+    // console.log(this);
+  },
+  click: function() {
+    this.get('controller').send('pick', this.get('content.data'));
   }
+});
+
+App.ItemPickerResultsView = Ember.CollectionView.extend({
 });
