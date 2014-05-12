@@ -148,34 +148,44 @@ App.ItemPickerComponent = Ember.Component.extend({
     });
 
     var keyNamespace = "keydown." + Ember.guidFor(this);
-    $(document).on(keyNamespace, function(e){
+    $(document).on(keyNamespace, function(e) {
       if (e.which === 38) {
-        self.incrementProperty('_highlightedIndex');
+        self.decrementCursor();
       }
       else if (e.which === 40) {
-        self.decrementProperty('_highlightedIndex');
+        self.incrementCursor();
       }
     });
 
-    // this.set('_highlighted', this.get('selected'));
     this.set('active', true);
     this.$('#dropdown-body').show();
     this.$('#dropdown-query-input').focus();
   },
 
-  highlightChanged: function() {
+  incrementCursor: function() {
     var length = this.get('_displayedResults').length;
     var index = this.get('_highlightedIndex');
-
-    if (index >= length) {
-      this.set('_highlightedIndex', length - 1);
-      return;
+    if (index < length - 1) {
+      this.incrementProperty('_highlightedIndex');
     }
-    if (index < 0) {
+    else {
       this.set('_highlightedIndex', 0);
-      return;
     }
+  },
 
+  decrementCursor: function() {
+    var length = this.get('_displayedResults').length;
+    var index = this.get('_highlightedIndex');
+    if (index > 0) {
+      this.decrementProperty('_highlightedIndex');
+    }
+    // set to highest
+    else {
+      this.set('_highlightedIndex', length - 1);
+    }
+  },
+
+  highlightChanged: function() {
     this.$('.highlighted').removeClass('highlighted');
     var index = this.get('_highlightedIndex');
     if (index !== undefined) {
@@ -211,11 +221,11 @@ App.ItemPickerComponent = Ember.Component.extend({
     childMouseEnter: function(index) {
       this.set('_highlightedIndex', index);
     },
-    childMouseLeave: function(index) {
-      if (this.get('_highlightedIndex') === index) {
-        this.set('_highlightedIndex', undefined);
-      }
-    }
+    // childMouseLeave: function(index) {
+    //   if (this.get('_highlightedIndex') === index) {
+    //     this.set('_highlightedIndex', undefined);
+    //   }
+    // }
   },
 
   // when the component is ready on the DOM, then prepopulate it with results.
