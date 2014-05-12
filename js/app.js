@@ -147,58 +147,18 @@ App.ItemPickerComponent = Ember.Component.extend({
       return false;
     });
 
-    var keyNamespace = "keydown." + Ember.guidFor(this);
-    $(document).on(keyNamespace, function(e) {
-      if (e.which === 38) {
-        self.decrementCursor();
-      }
-      else if (e.which === 40) {
-        self.incrementCursor();
-      }
-    });
+    this.get('itemResultsView').activate();
 
     this.set('active', true);
     this.$('#dropdown-body').show();
     this.$('#dropdown-query-input').focus();
   },
 
-  incrementCursor: function() {
-    var length = this.get('_displayedResults').length;
-    var index = this.get('_highlightedIndex');
-    if (index < length - 1) {
-      this.incrementProperty('_highlightedIndex');
-    }
-    else {
-      this.set('_highlightedIndex', 0);
-    }
-  },
-
-  decrementCursor: function() {
-    var length = this.get('_displayedResults').length;
-    var index = this.get('_highlightedIndex');
-    if (index > 0) {
-      this.decrementProperty('_highlightedIndex');
-    }
-    // set to highest
-    else {
-      this.set('_highlightedIndex', length - 1);
-    }
-  },
-
-  highlightChanged: function() {
-    this.$('.highlighted').removeClass('highlighted');
-    var index = this.get('_highlightedIndex');
-    if (index !== undefined) {
-      this.$('.dropdown-result:eq(' + index + ')').addClass('highlighted');
-    }
-  }.observes('_highlightedIndex'),
-
   deactivate: function() {
     this.set('query', '');
     var eventNamespace = "click." + Ember.guidFor(this);
     $(document).off(eventNamespace);
-    var keyNamespace = "keydown." + Ember.guidFor(this);
-    $(document).off(keyNamespace);
+    this.get('itemResultsView').deactivate();
     this.$('#dropdown-body').hide();
     this.set('active', false);
   },
@@ -217,15 +177,7 @@ App.ItemPickerComponent = Ember.Component.extend({
       console.log('fired');
       this.set('selected', item);
       this.deactivate();
-    },
-    childMouseEnter: function(index) {
-      this.set('_highlightedIndex', index);
-    },
-    // childMouseLeave: function(index) {
-    //   if (this.get('_highlightedIndex') === index) {
-    //     this.set('_highlightedIndex', undefined);
-    //   }
-    // }
+    }
   },
 
   // when the component is ready on the DOM, then prepopulate it with results.
@@ -242,6 +194,55 @@ App.ItemPickerResultsView = Ember.CollectionView.extend({
         item.index = index;
       });
     } 
+  },
+  activate: function() {
+    var keyNamespace = "keydown." + Ember.guidFor(this);
+    var self = this;
+    $(document).on(keyNamespace, function(e) {
+      if (e.which === 38) {
+        self.decrementCursor();
+      }
+      else if (e.which === 40) {
+        self.incrementCursor();
+      }
+    });
+  },
+  deactivate: function() {
+    var keyNamespace = "keydown." + Ember.guidFor(this);
+    $(document).off(keyNamespace);
+  },
+  incrementCursor: function() {
+    var length = this.get('content').length;
+    var index = this.get('_highlightedIndex');
+    if (index < length - 1) {
+      this.incrementProperty('_highlightedIndex');
+    }
+    else {
+      this.set('_highlightedIndex', 0);
+    }
+  },
+  decrementCursor: function() {
+    var length = this.get('content  ').length;
+    var index = this.get('_highlightedIndex');
+    if (index > 0) {
+      this.decrementProperty('_highlightedIndex');
+    }
+    // set to highest
+    else {
+      this.set('_highlightedIndex', length - 1);
+    }
+  },
+  highlightChanged: function() {
+    this.$('.highlighted').removeClass('highlighted');
+    var index = this.get('_highlightedIndex');
+    if (index !== undefined) {
+      this.$('.dropdown-result:eq(' + index + ')').addClass('highlighted');
+    }
+  }.observes('_highlightedIndex'),
+  actions: {
+    childMouseEnter: function(index) {
+      this.set('_highlightedIndex', index);
+    }
   }
 });
 
@@ -249,10 +250,10 @@ App.ItemResultView = Ember.View.extend({
   classNames: 'dropdown-result',
   templateName: 'views/item-result',
   mouseEnter: function() {
-    this.get('controller').send('childMouseEnter', this.get('content.index'));
+    this.get('parentView').send('childMouseEnter', this.get('content.index'));
   },
   mouseLeave: function() {
-    this.get('controller').send('childMouseLeave', this.get('content.index'));
+    this.get('parentView').send('childMouseLeave', this.get('content.index'));
   },
   click: function() {
     this.get('controller').send('pick', this.get('content.data'));
