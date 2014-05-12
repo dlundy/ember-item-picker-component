@@ -89,7 +89,7 @@
   cursor: pointer;
 }
 
-.dropdown-results :hover {
+.dropdown-result.highlighted {
   background-color: blue;
   color: white;
 }

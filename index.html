@@ -14,16 +14,9 @@
 
   <script type="text/x-handlebars" id="index">
     <h2>{{content.title}}</h2>
-    <h3>{{content.highlighted}}</h3>
-    {{item-picker items=artists selected=content.artist _highlighted=content.highlighted propertyName='name'}}
+    {{item-picker items=artists selected=content.artist propertyName='name'}}
     <h3>{{content.artist.name}}</h3>
     <img {{bind-attr src=content.artist.imgUrl}} style="width: 400px; display: block">
-  </script>
-
-  <script type="text/x-handlebars" data-template-name="views/item-result">
-    {{#with view.content}}
-      {{highlight display start end}}
-    {{/with}}
   </script>
 
   <script type="text/x-handlebars" data-template-name="components/item-picker">
@@ -36,10 +29,16 @@
           <div class="dropdown-query">
             {{input id="dropdown-query-input" type="text" value=query }}
           </div>
-          {{collection App.ItemPickerResultsView content=highlights itemViewClass="App.ItemResultView" tagName="ul" class="dropdown-results"}}
+          {{collection App.ItemPickerResultsView content=_displayedResults itemViewClass="App.ItemResultView" tagName="ul" class="dropdown-results"}}
         </div>
       </div>
     </div>
+  </script>
+
+  <script type="text/x-handlebars" data-template-name="views/item-result">
+    {{#with view.content}}
+      {{highlight display start end}}
+    {{/with}}
   </script>
 
   <script src="js/libs/jquery-1.10.2.js"></script>

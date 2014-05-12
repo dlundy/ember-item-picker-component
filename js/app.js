@@ -85,6 +85,7 @@ App.ItemPickerComponent = Ember.Component.extend({
   query: "",
   classNames: ["item-picker"],
   propertyName: '',
+  _displayedResults: [],
 
   displaySelected: function() {
     return this.getWithDefault('selected.' + this.get('propertyName'), this.get('selected'));
@@ -100,7 +101,7 @@ App.ItemPickerComponent = Ember.Component.extend({
     results = [];
     var propertyName = this.get('propertyName');
 
-    // valid query, push matches into highlights array
+    // valid query, push matches into items array
     if (query.length > 0) { 
       query = ' ' + query.toUpperCase().trim();
       this.get('items').forEach(function(item, index) {
@@ -129,7 +130,7 @@ App.ItemPickerComponent = Ember.Component.extend({
         });
       });
     }
-    this.set('highlights', results);
+    this.set('_displayedResults', results);
   },
 
   activate: function() {
@@ -148,16 +149,39 @@ App.ItemPickerComponent = Ember.Component.extend({
 
     var keyNamespace = "keydown." + Ember.guidFor(this);
     $(document).on(keyNamespace, function(e){
-      if (e.which === 38 || e.which === 40) {
-        console.log(e.which);
+      if (e.which === 38) {
+        self.incrementProperty('_highlightedIndex');
+      }
+      else if (e.which === 40) {
+        self.decrementProperty('_highlightedIndex');
       }
     });
 
-    this.set('_highlighted', this.get('selected'));
+    // this.set('_highlighted', this.get('selected'));
     this.set('active', true);
     this.$('#dropdown-body').show();
     this.$('#dropdown-query-input').focus();
   },
+
+  highlightChanged: function() {
+    var length = this.get('_displayedResults').length;
+    var index = this.get('_highlightedIndex');
+
+    if (index >= length) {
+      this.set('_highlightedIndex', length - 1);
+      return;
+    }
+    if (index < 0) {
+      this.set('_highlightedIndex', 0);
+      return;
+    }
+
+    this.$('.highlighted').removeClass('highlighted');
+    var index = this.get('_highlightedIndex');
+    if (index !== undefined) {
+      this.$('.dropdown-result:eq(' + index + ')').addClass('highlighted');
+    }
+  }.observes('_highlightedIndex'),
 
   deactivate: function() {
     this.set('query', '');
@@ -183,6 +207,14 @@ App.ItemPickerComponent = Ember.Component.extend({
       console.log('fired');
       this.set('selected', item);
       this.deactivate();
+    },
+    childMouseEnter: function(index) {
+      this.set('_highlightedIndex', index);
+    },
+    childMouseLeave: function(index) {
+      if (this.get('_highlightedIndex') === index) {
+        this.set('_highlightedIndex', undefined);
+      }
     }
   },
 
@@ -192,16 +224,28 @@ App.ItemPickerComponent = Ember.Component.extend({
   }
 });
 
+App.ItemPickerResultsView = Ember.CollectionView.extend({
+  arrayDidChange: function(content, start, removed, added) {
+    this._super(content, start, removed, added);
+    if (content !== undefined) {
+      content.forEach(function(item, index) {
+        item.index = index;
+      });
+    } 
+  }
+});
+
 App.ItemResultView = Ember.View.extend({
   classNames: 'dropdown-result',
   templateName: 'views/item-result',
   mouseEnter: function() {
-    // console.log(this);
+    this.get('controller').send('childMouseEnter', this.get('content.index'));
+  },
+  mouseLeave: function() {
+    this.get('controller').send('childMouseLeave', this.get('content.index'));
   },
   click: function() {
     this.get('controller').send('pick', this.get('content.data'));
   }
 });
 
-App.ItemPickerResultsView = Ember.CollectionView.extend({
-});
