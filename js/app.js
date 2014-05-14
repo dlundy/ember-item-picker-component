@@ -174,7 +174,6 @@ App.ItemPickerComponent = Ember.Component.extend({
       }
     },
     pick: function(item) {
-      console.log('fired');
       this.set('selected', item);
       this.deactivate();
     }
@@ -186,24 +185,35 @@ App.ItemPickerComponent = Ember.Component.extend({
   }
 });
 
-App.ItemPickerResultsView = Ember.CollectionView.extend({
+App.SelectableCollectionView = Ember.CollectionView.extend({
+
   arrayDidChange: function(content, start, removed, added) {
     this._super(content, start, removed, added);
     if (content !== undefined) {
       content.forEach(function(item, index) {
         item.index = index;
       });
-    } 
+    }
   },
+
+  // when this is activated, should be passed info about where to scroll to and which item to be highlighted etc?
+  // who is responsible for this?
   activate: function() {
     var keyNamespace = "keydown." + Ember.guidFor(this);
     var self = this;
     $(document).on(keyNamespace, function(e) {
+      // up arrow
       if (e.which === 38) {
         self.decrementCursor();
       }
+      // down arrow
       else if (e.which === 40) {
         self.incrementCursor();
+      }
+      else if (e.which === 13) {
+        var index = self.get('_highlightedIndex');
+        var childView = self.get('childViews')[index];
+        childView.click();
       }
     });
   },
@@ -222,7 +232,7 @@ App.ItemPickerResultsView = Ember.CollectionView.extend({
     }
   },
   decrementCursor: function() {
-    var length = this.get('content  ').length;
+    var length = this.get('content').length;
     var index = this.get('_highlightedIndex');
     if (index > 0) {
       this.decrementProperty('_highlightedIndex');
