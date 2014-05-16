@@ -87,6 +87,10 @@ App.ItemPickerComponent = Ember.Component.extend({
   propertyName: '',
   _displayedResults: [],
 
+  didInsertElement: function() {
+    this.fire();
+  },
+
   displaySelected: function() {
     return this.getWithDefault('selected.' + this.get('propertyName'), this.get('selected'));
   }.property('selected'),
@@ -134,71 +138,67 @@ App.ItemPickerComponent = Ember.Component.extend({
   },
 
   activate: function() {
-    var eventNamespace = "click." + Ember.guidFor(this);
-    var self = this;
-    var container = this.$();
+    if (this.get('active') !== true) {
+      var eventNamespace = "click." + Ember.guidFor(this);
+      var self = this;
+      var container = this.$();
 
-    // Add external click handler on the document. This watches for any clicks on the document,
-    // and if it sees one outside of the component, then it deactivates the dropdown.
-    $(document).on(eventNamespace, function(e) {
-      if (!container.is(e.target) && container.has(e.target).length === 0) {
-        self.deactivate();
-      }
-      return false;
-    });
+      $(document).on(eventNamespace, function(e) {
+        if (!container.is(e.target) && container.has(e.target).length === 0) {
+          self.deactivate();
+        }
+        return false;
+      });
 
-    this.get('itemResultsView').activate();
-    this.set('active', true);
-    this.$('#dropdown-body').show();
-    this.$('#dropdown-query-input').focus();
+      this.get('itemResultsView').activate();
+      this.set('active', true);
+      this.$('#dropdown-body').show();
+      this.$('#dropdown-query-input').focus();
+    }
   },
 
   deactivate: function() {
-    this.set('query', '');
-    var eventNamespace = "click." + Ember.guidFor(this);
-    $(document).off(eventNamespace);
-    this.get('itemResultsView').deactivate();
-    this.$('#dropdown-body').hide();
-    this.set('active', false);
+    if (this.get('active') !== false) {
+      this.set('query', '');
+      var eventNamespace = "click." + Ember.guidFor(this);
+      $(document).off(eventNamespace);
+      this.get('itemResultsView').deactivate();
+      this.$('#dropdown-body').hide();
+      this.set('active', false);
+    }
   },
 
   actions: {
     toggle: function() {
-      if (this.get('active')) {
-        this.deactivate();
-      }
-      else {
-        this.activate();
-      }
+      if (this.get('active')) { this.deactivate(); }
+      else { this.activate(); }
     },
     pick: function(item) {
       this.set('selected', item);
       this.deactivate();
     }
-  },
-
-  // when the component is ready on the DOM, then prepopulate it with results.
-  didInsertElement: function() {
-    this.fire();
   }
+
 });
 
 
 App.SelectableCollectionView = Ember.CollectionView.extend({
 
-  arrayDidChange: function(content, start, removed, added) {
-    this._super(content, start, removed, added);
-    // reset highlight to top of list
-    this.set('_highlightedIndex', 0);
-    Ember.run.scheduleOnce('afterRender', this, 'highlightChanged');
+  actions: {
+    childMouseEnter: function(index) {
+      this.set('_highlightedIndex', index);
+    } 
   },
 
-  // when this is activated, should be passed info about where to scroll to and which item to be highlighted etc?
-  // who is responsible for this?
+  arrayDidChange: function(content, start, removed, added) {
+    this._super(content, start, removed, added);
+    Ember.run.scheduleOnce('afterRender', this, 'highlightSelected');
+  },
+
   activate: function() {
-    this.set('_highlightedIndex', 0);
     var keyNamespace = "keydown." + Ember.guidFor(this);
     var self = this;
+    // bind keyboard events
     $(document).on(keyNamespace, function(e) {
       if (e.which === 38) {
         self.decrementCursor();
@@ -212,11 +212,34 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
         childView.click();
       }
     });
+    Ember.run.scheduleOnce('afterRender', this, 'highlightSelected');
   },
 
   deactivate: function() {
     var keyNamespace = "keydown." + Ember.guidFor(this);
+    // unbind keyboard events
     $(document).off(keyNamespace);
+  },
+
+  highlightSelected: function() {
+    var obj = this.get('selected'),
+        self = this,
+        found = false,
+        oldIndex = this.get('_highlightedIndex');
+
+    this.get('childViews').forEach(function(view, index) {
+      if (view.get('content.data') === obj) {
+        self.set('_highlightedIndex', view.get('contentIndex'));
+        found = true;
+      }
+    });
+    if (found == false) {
+      this.set('_highlightedIndex', 0);
+    }
+    // manually force a re-render if the highlighted index did not change.
+    if (oldIndex == this.get('_highlightedIndex')) {
+      this.highlightChanged();
+    }
   },
 
   incrementCursor: function() {
@@ -236,7 +259,6 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
     if (index > 0) {
       this.decrementProperty('_highlightedIndex');
     }
-    // set to highest
     else {
       this.set('_highlightedIndex', length - 1);
     }
@@ -254,18 +276,15 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
 
   highlightChanged: function() {
     var index = this.get('_highlightedIndex');
-    this.get('childViews')[index].set('isHighlighted', true);
-  }.observes('_highlightedIndex'),
-
-  actions: {
-    childMouseEnter: function(index) {
-      this.set('_highlightedIndex', index);
-    } 
-  }
+    var views = this.get('childViews');
+    if (views.length > 0) {
+      views[index].set('isHighlighted', true);
+    }
+  }.observes('_highlightedIndex')
 
 });
 
-App.ItemResultView = Ember.View.extend({
+App.SelectableCollectionItemView = Ember.View.extend({
 
   classNames: 'dropdown-result',
   classNameBindings: ['isHighlighted'],
