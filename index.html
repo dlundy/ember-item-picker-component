@@ -29,7 +29,12 @@
           <div class="dropdown-query">
             {{input id="dropdown-query-input" type="text" value=query }}
           </div>
-          {{collection App.SelectableCollectionView content=_displayedResults itemViewClass="App.ItemResultView" tagName="ul" class="dropdown-results" viewName="itemResultsView"}}
+          {{collection App.SelectableCollectionView
+                       content=_displayedResults
+                       itemViewClass="App.ItemResultView"
+                       tagName="ul"
+                       class="dropdown-results"
+                       viewName="itemResultsView"}}
         </div>
       </div>
     </div>

@@ -188,12 +188,6 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
 
   arrayDidChange: function(content, start, removed, added) {
     this._super(content, start, removed, added);
-    // re-index the contents
-    if (content !== undefined) {
-      content.forEach(function(item, index) {
-        item.index = index;
-      });
-    }
     // reset highlight to top of list
     this.set('_highlightedIndex', 0);
     Ember.run.scheduleOnce('afterRender', this, 'highlightChanged');
@@ -266,25 +260,24 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
   actions: {
     childMouseEnter: function(index) {
       this.set('_highlightedIndex', index);
-    }
+    } 
   }
 
 });
 
-
 App.ItemResultView = Ember.View.extend({
+
   classNames: 'dropdown-result',
   classNameBindings: ['isHighlighted'],
   isHighlighted: false,
   templateName: 'views/item-result',
+
   mouseEnter: function() {
-    debugger;
-    this.get('parentView').send('childMouseEnter', this.get('content.index'));
+    this.get('parentView').send('childMouseEnter', this.get('contentIndex'));
   },
-  mouseLeave: function() {
-    this.get('parentView').send('childMouseLeave', this.get('content.index'));
-  },
+
   click: function() {
     this.get('controller').send('pick', this.get('content.data'));
   }
+
 });
