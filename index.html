@@ -16,7 +16,7 @@
     <h3>Artist Name: {{content.artist.name}}</h3>
     <img {{bind-attr src=content.artist.imgUrl}} style="height: 150px; display: block; margin-bottom: 20px">
 
-    {{item-picker items=artists selected=content.artist propertyName='name'}}
+    {{item-picker items=artists selected=content.artist propertyName='name' placeholder="Select an artist."}}
   </script>
 
   <script type="text/x-handlebars" data-template-name="components/item-picker">

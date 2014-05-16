@@ -4,7 +4,7 @@ App = Ember.Application.create();
 Ember.Handlebars.helper('highlight', function(str, start, end, options) {
   if (start >= 0 && end > 0) {
     var left, middle, right;
-    left = (start > 0) ? str.slice(0, start) : "";
+    left = (start > 0) ? str.slice(0, start) : '';
     middle = str.slice(start, end);
     right = str.slice(end)
     return new Handlebars.SafeString(left + '<em>' + middle + '</em>' + right);
@@ -63,7 +63,6 @@ var sample_artists = [
 
 var sample_album = App.Album.create({
   title: 'Sound Affects',
-  artist: sample_artists[6]
 });
 
 App.IndexRoute = Ember.Route.extend({
@@ -82,17 +81,24 @@ App.IndexController = Ember.Controller.extend({
 
 // Component code
 App.ItemPickerComponent = Ember.Component.extend({
-  query: "",
-  classNames: ["item-picker"],
+  query: '',
+  classNames: ['item-picker'],
   propertyName: '',
   _displayedResults: [],
+  placeholder: 'Please make a selection.',
 
   didInsertElement: function() {
     this.fire();
   },
 
   displaySelected: function() {
-    return this.getWithDefault('selected.' + this.get('propertyName'), this.get('selected'));
+    var property = this.getWithDefault('selected.' + this.get('propertyName'), this.get('selected'));
+    if (property === undefined || property === null) {
+      return this.get('placeholder');
+    }
+    else {
+      return property;
+    }
   }.property('selected'),
 
   // Debounced observer. Watches for query changes, but will only act on them every 300ms.
@@ -139,7 +145,7 @@ App.ItemPickerComponent = Ember.Component.extend({
 
   activate: function() {
     if (this.get('active') !== true) {
-      var eventNamespace = "click." + Ember.guidFor(this);
+      var eventNamespace = 'click.' + Ember.guidFor(this);
       var self = this;
       var container = this.$();
 
@@ -160,7 +166,7 @@ App.ItemPickerComponent = Ember.Component.extend({
   deactivate: function() {
     if (this.get('active') !== false) {
       this.set('query', '');
-      var eventNamespace = "click." + Ember.guidFor(this);
+      var eventNamespace = 'click.' + Ember.guidFor(this);
       $(document).off(eventNamespace);
       this.get('itemResultsView').deactivate();
       this.$('#dropdown-body').hide();
@@ -187,7 +193,7 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
   actions: {
     childMouseEnter: function(index) {
       this.set('_highlightedIndex', index);
-    } 
+    }
   },
 
   arrayDidChange: function(content, start, removed, added) {
@@ -196,7 +202,7 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
   },
 
   activate: function() {
-    var keyNamespace = "keydown." + Ember.guidFor(this);
+    var keyNamespace = 'keydown.' + Ember.guidFor(this);
     var self = this;
     // bind keyboard events
     $(document).on(keyNamespace, function(e) {
@@ -216,7 +222,7 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
   },
 
   deactivate: function() {
-    var keyNamespace = "keydown." + Ember.guidFor(this);
+    var keyNamespace = 'keydown.' + Ember.guidFor(this);
     // unbind keyboard events
     $(document).off(keyNamespace);
   },
