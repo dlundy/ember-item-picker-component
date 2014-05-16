@@ -92,7 +92,7 @@ App.ItemPickerComponent = Ember.Component.extend({
   }.property('selected'),
 
   // Debounced observer. Watches for query changes, but will only act on them every 300ms.
-  watch: function() {
+  queryChanged: function() {
     Ember.run.debounce(this, this.fire, 300);
   }.observes('query'),
 
@@ -148,7 +148,6 @@ App.ItemPickerComponent = Ember.Component.extend({
     });
 
     this.get('itemResultsView').activate();
-
     this.set('active', true);
     this.$('#dropdown-body').show();
     this.$('#dropdown-query-input').focus();
@@ -164,7 +163,6 @@ App.ItemPickerComponent = Ember.Component.extend({
   },
 
   actions: {
-    // opens/closes the selection dropdown
     toggle: function() {
       if (this.get('active')) {
         this.deactivate();
@@ -185,28 +183,32 @@ App.ItemPickerComponent = Ember.Component.extend({
   }
 });
 
+
 App.SelectableCollectionView = Ember.CollectionView.extend({
 
   arrayDidChange: function(content, start, removed, added) {
     this._super(content, start, removed, added);
+    // re-index the contents
     if (content !== undefined) {
       content.forEach(function(item, index) {
         item.index = index;
       });
     }
+    // reset highlight to top of list
+    this.set('_highlightedIndex', 0);
+    Ember.run.scheduleOnce('afterRender', this, 'highlightChanged');
   },
 
   // when this is activated, should be passed info about where to scroll to and which item to be highlighted etc?
   // who is responsible for this?
   activate: function() {
+    this.set('_highlightedIndex', 0);
     var keyNamespace = "keydown." + Ember.guidFor(this);
     var self = this;
     $(document).on(keyNamespace, function(e) {
-      // up arrow
       if (e.which === 38) {
         self.decrementCursor();
       }
-      // down arrow
       else if (e.which === 40) {
         self.incrementCursor();
       }
@@ -217,10 +219,12 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
       }
     });
   },
+
   deactivate: function() {
     var keyNamespace = "keydown." + Ember.guidFor(this);
     $(document).off(keyNamespace);
   },
+
   incrementCursor: function() {
     var length = this.get('content').length;
     var index = this.get('_highlightedIndex');
@@ -231,6 +235,7 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
       this.set('_highlightedIndex', 0);
     }
   },
+
   decrementCursor: function() {
     var length = this.get('content').length;
     var index = this.get('_highlightedIndex');
@@ -242,24 +247,38 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
       this.set('_highlightedIndex', length - 1);
     }
   },
-  highlightChanged: function() {
-    this.$('.highlighted').removeClass('highlighted');
+
+  highlightWillChange: function() {
     var index = this.get('_highlightedIndex');
     if (index !== undefined) {
-      this.$('.dropdown-result:eq(' + index + ')').addClass('highlighted');
+      var view = this.get('childViews')[index];
+      if (view !== undefined) {
+        view.set('isHighlighted', false);
+      }
     }
+  }.observesBefore('_highlightedIndex'),
+
+  highlightChanged: function() {
+    var index = this.get('_highlightedIndex');
+    this.get('childViews')[index].set('isHighlighted', true);
   }.observes('_highlightedIndex'),
+
   actions: {
     childMouseEnter: function(index) {
       this.set('_highlightedIndex', index);
     }
   }
+
 });
+
 
 App.ItemResultView = Ember.View.extend({
   classNames: 'dropdown-result',
+  classNameBindings: ['isHighlighted'],
+  isHighlighted: false,
   templateName: 'views/item-result',
   mouseEnter: function() {
+    debugger;
     this.get('parentView').send('childMouseEnter', this.get('content.index'));
   },
   mouseLeave: function() {
@@ -269,4 +288,3 @@ App.ItemResultView = Ember.View.extend({
     this.get('controller').send('pick', this.get('content.data'));
   }
 });
-

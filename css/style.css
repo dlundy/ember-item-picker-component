@@ -89,7 +89,7 @@
   cursor: pointer;
 }
 
-.dropdown-result.highlighted {
+.dropdown-result.is-highlighted {
   background-color: blue;
   color: white;
 }
