@@ -20,7 +20,7 @@
   </script>
 
   <script type="text/x-handlebars" data-template-name="components/item-picker">
-    <div {{bind-attr class=":dropdown active"}} style="width: 300px">
+    <div {{bind-attr class=":dropdown active"}} style="width: 300px;">
       <a class="dropdown-header" tabindex="-1" {{action "toggle"}}>
         <span class="dropdown-display">{{displaySelected}}</span>
       </a>
@@ -35,7 +35,8 @@
                         itemViewClass="App.SelectableCollectionItemView"
                         tagName="ul"
                         class="dropdown-results"
-                        viewName="itemResultsView"}}
+                        viewName="itemResultsView"
+                        height="300px"}}
         </div>
       </div>
     </div>

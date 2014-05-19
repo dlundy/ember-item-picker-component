@@ -59,6 +59,26 @@ var sample_artists = [
     name: 'M83',
     imgUrl: 'http://userserve-ak.last.fm/serve/500/71481450/M83+3.png'
   }),
+  App.Artist.create({
+    name: 'Krallice',
+    imgUrl: 'http://userserve-ak.last.fm/serve/500/61806689/Krallice.png'
+  }),
+  App.Artist.create({
+    name: 'Hakan Hellstrom',
+    imgUrl: 'http://userserve-ak.last.fm/serve/500/52943513/Hkan+Hellstrm++Andreas+hlund.jpg'
+  }),
+  App.Artist.create({
+    name: 'Ulver',
+    imgUrl: 'http://userserve-ak.last.fm/serve/500/67319746/Ulver++PNG.png'
+  }),
+  App.Artist.create({
+    name: 'Slowdive',
+    imgUrl: 'http://userserve-ak.last.fm/serve/500/96464657/Slowdive++better+miniature+prof.jpg'
+  }),
+  App.Artist.create({
+    name: 'Hevisaurus',
+    imgUrl: 'http://userserve-ak.last.fm/serve/500/36679583/Hevisaurus+3540292784_photo.jpg'
+  })
 ];
 
 var sample_album = App.Album.create({
@@ -189,6 +209,11 @@ App.ItemPickerComponent = Ember.Component.extend({
 
 
 App.SelectableCollectionView = Ember.CollectionView.extend({
+  attributeBindings: ["style"],
+  style: function() {
+    debugger;
+    return "height: " + this.get('height');
+  }.property(),
 
   actions: {
     childMouseEnter: function(index) {
