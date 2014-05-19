@@ -307,23 +307,28 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
 
   highlightChanged: function() {
     var index = this.get('_highlightedIndex'),
-        views = this.get('childViews'),
-        view;
+        views = this.get('childViews');
 
-    if (views.length > 0) {
-      // Determine if selected item is outside of current view's viewport.
-      // If it is, adjust it into view.
-      view = views[index];
+    if ((views.length > 0) && views[index] !== undefined) {
+      var view = views[index];
+
       var viewportTop = this.$().scrollTop();
       var viewportBottom = viewportTop + this.$().height();
-      var viewTop = this.$().scrollTop() + view.$().position().top;
+      console.log("viewportBottom: " + viewportBottom);
+
+      var viewTop = viewportTop + view.$().position().top;
       var viewBottom = viewTop + view.$().outerHeight();
 
+      console.log("viewBottom: " + viewBottom);
+
+      // Determine if selected item is outside of current view's viewport.
+      // if view above viewport, scroll so that top of view is aligned at top of container
       if (viewportTop > viewTop) {
         this.$().scrollTop(viewTop);
       }
+      // if view below viewport, scroll so that bottom of view is aligned at bottom of container
       else if (viewBottom > viewportBottom) {
-        this.$().scrollTop(viewBottom - this.$().outerHeight());
+        this.$().scrollTop(viewBottom - this.$().height());
       }
 
       views[index].set('isHighlighted', true);

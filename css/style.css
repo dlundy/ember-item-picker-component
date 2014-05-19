@@ -86,9 +86,10 @@
 .dropdown-results li {
   height: 20px;
   padding: 5px;
-  /*font-size: 14px;*/
   line-height: 20px;
   cursor: pointer;
+  /* mitigates a weird bug in chrome, where you can mouse over 1px of hidden padding along an edge */
+  margin-bottom: 1px; 
 }
 
 .dropdown-result.is-highlighted {
