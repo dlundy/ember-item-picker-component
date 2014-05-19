@@ -314,12 +314,9 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
 
       var viewportTop = this.$().scrollTop();
       var viewportBottom = viewportTop + this.$().height();
-      console.log("viewportBottom: " + viewportBottom);
 
       var viewTop = viewportTop + view.$().position().top;
       var viewBottom = viewTop + view.$().outerHeight();
-
-      console.log("viewBottom: " + viewBottom);
 
       // Determine if selected item is outside of current view's viewport.
       // if view above viewport, scroll so that top of view is aligned at top of container
