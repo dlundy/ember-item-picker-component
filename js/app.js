@@ -210,9 +210,9 @@ App.ItemPickerComponent = Ember.Component.extend({
 
 App.SelectableCollectionView = Ember.CollectionView.extend({
   attributeBindings: ["style"],
+
   style: function() {
-    debugger;
-    return "height: " + this.get('height');
+    return "max-height: " + this.get('height');
   }.property(),
 
   actions: {
@@ -306,9 +306,26 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
   }.observesBefore('_highlightedIndex'),
 
   highlightChanged: function() {
-    var index = this.get('_highlightedIndex');
-    var views = this.get('childViews');
+    var index = this.get('_highlightedIndex'),
+        views = this.get('childViews'),
+        view;
+
     if (views.length > 0) {
+      // Determine if selected item is outside of current view's viewport.
+      // If it is, adjust it into view.
+      view = views[index];
+      var viewportTop = this.$().scrollTop();
+      var viewportBottom = viewportTop + this.$().height();
+      var viewTop = this.$().scrollTop() + view.$().position().top;
+      var viewBottom = viewTop + view.$().outerHeight();
+
+      if (viewportTop > viewTop) {
+        this.$().scrollTop(viewTop);
+      }
+      else if (viewBottom > viewportBottom) {
+        this.$().scrollTop(viewBottom - this.$().outerHeight());
+      }
+
       views[index].set('isHighlighted', true);
     }
   }.observes('_highlightedIndex')

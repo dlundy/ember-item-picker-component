@@ -80,6 +80,7 @@
   padding: 0;
   white-space: nowrap;
   overflow-y: scroll;
+  position: relative;
 }
 
 .dropdown-results li {
