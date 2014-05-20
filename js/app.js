@@ -111,14 +111,13 @@ App.ItemPickerComponent = Ember.Component.extend({
     this.fire();
   },
 
-  displaySelected: function() {
-    var property = this.getWithDefault('selected.' + this.get('propertyName'), this.get('selected'));
-    if (property === undefined || property === null) {
-      return this.get('placeholder');
-    }
-    else {
-      return property;
-    }
+  hasSelection: function() {
+    var property = this.get('selectedWithProperty');
+    return (property !== undefined && property !== null);
+  }.property('selectedWithProperty'),
+
+  selectedWithProperty: function() {
+    return this.getWithDefault('selected.' + this.get('propertyName'), this.get('selected'));
   }.property('selected'),
 
   // Debounced observer. Watches for query changes, but will only act on them every 300ms.
