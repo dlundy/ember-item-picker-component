@@ -209,11 +209,11 @@ App.ItemPickerComponent = Ember.Component.extend({
 
 
 App.SelectableCollectionView = Ember.CollectionView.extend({
-  attributeBindings: ["style"],
 
-  style: function() {
-    return "max-height: " + this.get('height');
-  }.property(),
+  emptyView: Ember.View.extend({
+    classNames: ['no-results'],
+    template: Ember.Handlebars.compile("No results found.")
+  }),
 
   actions: {
     childMouseEnter: function(index) {
@@ -312,9 +312,11 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
     if ((views.length > 0) && views[index] !== undefined) {
       var view = views[index];
 
+      // upper and lower coords of the <ul> tag the list is contained in
       var viewportTop = this.$().scrollTop();
       var viewportBottom = viewportTop + this.$().height();
 
+      // upper and lower coords of the highlighted child view
       var viewTop = viewportTop + view.$().position().top;
       var viewBottom = viewTop + view.$().outerHeight();
 
