@@ -17,6 +17,7 @@
     <img {{bind-attr src=content.artist.imgUrl}} style="height: 150px; display: block; margin-bottom: 20px">
 
     {{item-picker items=artists selected=content.artist propertyName='name' placeholder="Select an artist..."}}
+
   </script>
 
   <script type="text/x-handlebars" data-template-name="components/item-picker">
@@ -36,10 +37,8 @@
           {{collection  App.SelectableCollectionView
                         content=_displayedResults
                         selected=selected
-                        itemViewClass="App.SelectableCollectionItemView"
-                        tagName="ul"
                         class="dropdown-results"
-                        viewName="itemResultsView"}}
+                        viewName="collectionView"}}
         </div>
       </div>
     </div>

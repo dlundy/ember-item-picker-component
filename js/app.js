@@ -83,6 +83,7 @@ var sample_artists = [
 
 var sample_album = App.Album.create({
   title: 'Sound Affects',
+  artist: sample_artists[6]
 });
 
 App.IndexRoute = Ember.Route.extend({
@@ -168,6 +169,7 @@ App.ItemPickerComponent = Ember.Component.extend({
       var self = this;
       var container = this.$();
 
+      // bind event handler to entire document to check for clicks outside component.
       $(document).on(eventNamespace, function(e) {
         if (!container.is(e.target) && container.has(e.target).length === 0) {
           self.deactivate();
@@ -175,7 +177,7 @@ App.ItemPickerComponent = Ember.Component.extend({
         return false;
       });
 
-      this.get('itemResultsView').activate();
+      this.get('collectionView').bindKeyboardEvents();
       this.set('active', true);
       this.$('#dropdown-body').show();
       this.$('#dropdown-query-input').focus();
@@ -187,7 +189,7 @@ App.ItemPickerComponent = Ember.Component.extend({
       this.set('query', '');
       var eventNamespace = 'click.' + Ember.guidFor(this);
       $(document).off(eventNamespace);
-      this.get('itemResultsView').deactivate();
+      this.get('collectionView').unbindKeyboardEvents();
       this.$('#dropdown-body').hide();
       this.set('active', false);
     }
@@ -206,13 +208,76 @@ App.ItemPickerComponent = Ember.Component.extend({
 
 });
 
+/**
+  Default Item View for SelectableCollectionView
+  This must be declared before SelectableCollectionView in current Ember (1.5)
+*/
+App.SelectableCollectionItemView = Ember.View.extend({
+
+  classNames: 'dropdown-result',
+  classNameBindings: ['isHighlighted'],
+  isHighlighted: false,
+  templateName: 'views/item-result',
+
+  mouseEnter: function() {
+    this.get('parentView').send('childMouseEnter', this.get('contentIndex'));
+  },
+
+  click: function() {
+    this.get('controller').send('pick', this.get('content.data'));
+  }
+
+});
+
+/**
+  SelectableCollectionView implements a basic selectable list view with optional 
+  highlighting. It is implemented as an Ember CollectionView. Handling selection 
+  is assumed to be left to the item view.
+
+  ## Formatting & Selection
+  The list expects an array of objects in this format, placed in the content property:
+
+  ```javascript
+  {
+    // the underlying JS object
+    data: {name: "Example Object, can be in any format"}
+    // the string to display in the list
+    display: "My Example Object",
+    // index position of where to start highlighting
+    start: 0,
+    // index position of where to end highlighting
+    end: 1
+  }
+  ```
+
+  Optionally you may provide a selected item in the 'selected' 
+  property to pre-select an item in the collection.
+
+  ## Handling keyboard events
+  Call bindKeyboardEvents to start handling keyboard events. 
+  This will bind an event handler on the document to intercept:
+    - up key
+    - down key
+    - enter key
+
+  Call unbindKeyboardEvents to stop.
+
+*/
 
 App.SelectableCollectionView = Ember.CollectionView.extend({
+
+  tagName: "ul",
+  itemViewClass: App.SelectableCollectionItemView,
 
   emptyView: Ember.View.extend({
     classNames: ['no-results'],
     template: Ember.Handlebars.compile("No results found.")
   }),
+
+  init: function() {
+    this._super();
+    Ember.run.scheduleOnce('afterRender', this, 'highlightSelected');
+  },
 
   actions: {
     childMouseEnter: function(index) {
@@ -225,7 +290,7 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
     Ember.run.scheduleOnce('afterRender', this, 'highlightSelected');
   },
 
-  activate: function() {
+  bindKeyboardEvents: function() {
     var keyNamespace = 'keydown.' + Ember.guidFor(this);
     var self = this;
 
@@ -245,8 +310,9 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
       else {
         return;
       }
-      // disable pointer events until mouse is moved
-      // starting to get into good territory for a state machine
+      // disable pointer events on list until mouse is moved
+      // this prevents hover from firing during keyboard scrolling in chrome/FF.
+      // IE11 already handles this properly.
       var pointerEvents = self.$().css('pointer-events');
       if (pointerEvents !== 'none') {
         $(document).on('mousemove', function(e) {
@@ -257,10 +323,9 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
       }
     });
 
-    Ember.run.scheduleOnce('afterRender', this, 'highlightSelected');
   },
 
-  deactivate: function() {
+  unbindKeyboardEvents: function() {
     var keyNamespace = 'keydown.' + Ember.guidFor(this);
     // unbind keyboard events
     $(document).off(keyNamespace);
@@ -348,22 +413,5 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
       views[index].set('isHighlighted', true);
     }
   }.observes('_highlightedIndex')
-
-});
-
-App.SelectableCollectionItemView = Ember.View.extend({
-
-  classNames: 'dropdown-result',
-  classNameBindings: ['isHighlighted'],
-  isHighlighted: false,
-  templateName: 'views/item-result',
-
-  mouseEnter: function() {
-    this.get('parentView').send('childMouseEnter', this.get('contentIndex'));
-  },
-
-  click: function() {
-    this.get('controller').send('pick', this.get('content.data'));
-  }
 
 });

@@ -20,8 +20,8 @@
 }
 
 .dropdown-body {
-  display: none;
   position: absolute;
+  display: none;
   border: 1px solid #aaa;
   z-index: 1010;
   background: white;
@@ -95,6 +95,7 @@
 
 .dropdown-results .no-results {
   cursor: auto;
+  color: #666;
 }
 
 .dropdown-result.is-highlighted {
