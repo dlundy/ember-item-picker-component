@@ -100,7 +100,25 @@ App.IndexController = Ember.Controller.extend({
   }.property()
 })
 
-// Component code
+/**
+  ItemPickerComponent implements a basic selection picker with searching/highlighting.
+
+  This default demo implementation only performs simple filtering against a list 
+  of existing objects, but this could be easily modified to search against a webservice.
+
+  ## Properties
+  - items: the list of items to choose from
+
+  - selected: The currently selected item. This is a binding that will be 
+      updated when the picker's selection changes.
+
+  - propertyName (optional): the property name of the objects that will be used
+    for display in listings, etc. If left blank, the picker will print the 
+    object itself.
+
+  - placeholder (optional): The placeholder text when nothing is selected
+*/
+
 App.ItemPickerComponent = Ember.Component.extend({
   query: '',
   classNames: ['item-picker'],
@@ -108,6 +126,7 @@ App.ItemPickerComponent = Ember.Component.extend({
   _displayedResults: [],
   placeholder: 'Please make a selection.',
 
+  // after component is ready, pre-populate the default listing
   didInsertElement: function() {
     this.fire();
   },
@@ -131,7 +150,6 @@ App.ItemPickerComponent = Ember.Component.extend({
     results = [];
     var propertyName = this.get('propertyName');
 
-    // valid query, push matches into items array
     if (query.length > 0) { 
       query = ' ' + query.toUpperCase().trim();
       this.get('items').forEach(function(item, index) {
@@ -148,8 +166,6 @@ App.ItemPickerComponent = Ember.Component.extend({
         }
       });
     }
-
-    // empty or non-valid query, just show everything
     else {
       this.get('items').forEach(function(item, index) {
         results.push({
@@ -322,7 +338,6 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
         self.$().css('pointer-events', 'none');
       }
     });
-
   },
 
   unbindKeyboardEvents: function() {
