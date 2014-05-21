@@ -228,6 +228,7 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
   activate: function() {
     var keyNamespace = 'keydown.' + Ember.guidFor(this);
     var self = this;
+
     // bind keyboard events
     $(document).on(keyNamespace, function(e) {
       if (e.which === 38) {
@@ -241,7 +242,21 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
         var childView = self.get('childViews')[index];
         childView.click();
       }
+      else {
+        return;
+      }
+      // disable pointer events until mouse is moved
+      // starting to get into good territory for a state machine
+      var pointerEvents = self.$().css('pointer-events');
+      if (pointerEvents !== 'none') {
+        $(document).on('mousemove', function(e) {
+          self.$().css('pointer-events', 'auto');
+          $(document).off('mousemove');
+        });
+        self.$().css('pointer-events', 'none');
+      }
     });
+
     Ember.run.scheduleOnce('afterRender', this, 'highlightSelected');
   },
 
@@ -294,6 +309,7 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
     }
   },
 
+  // before the highlight changes, remove the highlight property on the currently highlighted item.
   highlightWillChange: function() {
     var index = this.get('_highlightedIndex');
     if (index !== undefined) {
