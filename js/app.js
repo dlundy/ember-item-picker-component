@@ -1,19 +1,5 @@
 App = Ember.Application.create();
 
-// Handlebars helper to do string highlighting.
-Ember.Handlebars.helper('highlight', function(str, start, end, options) {
-  if (start >= 0 && end > 0) {
-    var left, middle, right;
-    left = (start > 0) ? str.slice(0, start) : '';
-    middle = str.slice(start, end);
-    right = str.slice(end)
-    return new Handlebars.SafeString(left + '<em>' + middle + '</em>' + right);
-  }
-  else {
-    return str;
-  }
-});
-
 App.Album = Ember.Object.extend({
   title: '',
   imgUrl: '',
@@ -429,4 +415,18 @@ App.SelectableCollectionView = Ember.CollectionView.extend({
     }
   }.observes('_highlightedIndex')
 
+});
+
+// Handlebars helper to do string highlighting.
+Ember.Handlebars.helper('highlight', function(str, start, end, options) {
+  if (start >= 0 && end > 0) {
+    var left, middle, right;
+    left = (start > 0) ? str.slice(0, start) : '';
+    middle = str.slice(start, end);
+    right = str.slice(end)
+    return new Handlebars.SafeString(left + '<em>' + middle + '</em>' + right);
+  }
+  else {
+    return str;
+  }
 });
